@@ -2,10 +2,17 @@ from fastapi import FastAPI, Form, Request, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 import psycopg2
+import joblib
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
+vectorizer = joblib.load('./vectorizer.pkl')
+logistic = joblib.load('./logistic_model.pkl')
+
+def predict(text):
+    text_vector = vectorizer.transform([text])
+    return logistic.predict(text_vector)[0]
 def get_db_connection():
     try:
         conn = psycopg2.connect(
@@ -39,7 +46,8 @@ async def login(request: Request, username: str = Form(...), password: str = For
         'request': request,
         'success': bool(user),
         'message': 'Logged in successfully!' if user else 'Failed to login!',
-        'query': query
+        'query': query,
+        'logistic_result': 'Injection' if predict(query) else 'Not Injection'
     }
 
     return templates.TemplateResponse('login.html', context)
