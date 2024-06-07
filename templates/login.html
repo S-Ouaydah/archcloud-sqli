@@ -23,9 +23,11 @@
         }
         .success {
             color: #4CAF50;
+            border-color: #4CAF50 !important;
         }
         .failure {
             color: #f44336;
+            border-color: #f44336 !important;
         }
         .query {
             color: black !important;
@@ -35,19 +37,14 @@
             border-left: 4px solid;
             text-wrap: pretty;
         }
-        .success .query {
-            border-color: #4CAF50 !important;
-        }
-        .failure .query {
-            border-color: #f44336 !important;
-        }
     </style>
 </head>
 <body>
     <div class="container {{ 'success' if success else 'failure' }}">
         <p class="message">{{ message }}</p>
-        <pre class="query">Ran: {{ query }}</pre>
-        <pre class="query">Logistic result: {{ logistic_result }}</pre>
+        <pre class="query {{ 'success' if success else 'failure' }}">Ran: {{ query }}</pre>
+        <pre class="query {{ 'success' if logistic_result else 'failure' }}">Logistic result: {{ logistic_result }}</pre>
+        <pre class="query {{ 'success' if openai_result else 'failure' }}">LLM(gpt-4o) result: {{ openai_result }}</pre>
     </div>
 </body>
 </html>
