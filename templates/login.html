@@ -25,9 +25,17 @@
             color: #4CAF50;
             border-color: #4CAF50 !important;
         }
+        .passbluish{
+            color: #63b2ee;
+            border-color: #63b2ee !important;
+        }
+        .injection {
+            color: #f89f1c;
+            border-color: #f89f1c !important;
+        }
         .failure {
-            color: #f44336;
-            border-color: #f44336 !important;
+            color: #fa4538;
+            border-color: #fa4538 !important;
         }
         .query {
             color: black !important;
@@ -43,8 +51,9 @@
     <div class="container {{ 'success' if success else 'failure' }}">
         <p class="message">{{ message }}</p>
         <pre class="query {{ 'success' if success else 'failure' }}">Ran: {{ query }}</pre>
-        <pre class="query {{ 'success' if logistic_result else 'failure' }}">Logistic result: {{ logistic_result }}</pre>
-        <pre class="query {{ 'success' if openai_result else 'failure' }}">LLM(gpt-4o) result: {{ openai_result }}</pre>
+        <pre class="query {{ 'pass' if logistic_result else 'injection' }}">Logistic result: {{ 'Injection!' if logistic_result else 'No Injection'}}</pre>
+        <pre class="query {{ 'pass' if random_forest_result else 'injection' }}">Random forest: {{'Injection!' if random_forest_result else 'No Injection'}}</pre>
+        <pre class="query {{ 'pass' if openai_result else 'injection' }}">LLM(gpt-4o) result: {{'Injection!' if openai_result else 'No Injection'}}</pre>
     </div>
 </body>
 </html>

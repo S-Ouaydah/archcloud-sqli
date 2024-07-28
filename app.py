@@ -1,24 +1,32 @@
+import os
+import psycopg2
+import joblib
+
 from fastapi import FastAPI, Form, Request, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from openai import OpenAI
 from dotenv import load_dotenv
-import os
-import requests
-import psycopg2
-import joblib
+
 
 load_dotenv()
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 app = FastAPI()
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 templates = Jinja2Templates(directory="templates")
 
-vectorizer = joblib.load('./vectorizer.pkl')
+vectorizer = joblib.load('./combined_vectorizer.pkl')
 logistic = joblib.load('./logistic_model.pkl')
+random_forest = joblib.load('./randomforest_model.pkl')  # Load the Random Forest model
 
 def predict(text):
     text_vector = vectorizer.transform([text])
     return bool(int(logistic.predict(text_vector)[0]))
+
+def predict_random_forest(text):
+    text_vector = vectorizer.transform([text])
+    return bool(int(random_forest.predict(text_vector)[0]))
+
 def get_db_connection():
     try:
         conn = psycopg2.connect(
@@ -31,6 +39,7 @@ def get_db_connection():
     except Exception as e:
         print(f"Database connection failed: {e}")
         return None
+
 def openai_predict(text):
     openai = OpenAI(api_key=OPENAI_API_KEY)
     response = openai.chat.completions.create(
@@ -45,7 +54,7 @@ def openai_predict(text):
     print(response.choices[0].message.content)
     return bool(int(response.choices[0].message.content))
 
-@app.post("/login",response_class=HTMLResponse)
+@app.post("/login", response_class=HTMLResponse)
 async def login(request: Request, username: str = Form(...), password: str = Form(...)):
     conn = get_db_connection()
     if conn is None:
@@ -53,9 +62,11 @@ async def login(request: Request, username: str = Form(...), password: str = For
 
     cur = conn.cursor()
     query = f"SELECT * FROM users WHERE username ='{username}' AND password = '{password}'"
+    # parameterized query
+    # param_query = "SELECT * FROM users WHERE username = %s AND password = %s"
     print(query)
     cur.execute(query)
-    # cur.execute(query, (username, password))
+    # cur.execute(param_query, (username, password))
     user = cur.fetchone()
 
     cur.close()
@@ -67,11 +78,11 @@ async def login(request: Request, username: str = Form(...), password: str = For
         'message': 'Logged in successfully!' if user else 'Failed to login!',
         'query': query,
         'logistic_result': predict(query),
+        'random_forest_result': predict_random_forest(query),  # Add Random Forest result
         'openai_result': openai_predict(query)
     }
 
     return templates.TemplateResponse('login.html', context)
-
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
