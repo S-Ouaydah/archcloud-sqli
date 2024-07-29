@@ -25,7 +25,7 @@
             color: #4CAF50;
             border-color: #4CAF50 !important;
         }
-        .passbluish{
+        .pass{
             color: #63b2ee;
             border-color: #63b2ee !important;
         }
@@ -51,9 +51,9 @@
     <div class="container {{ 'success' if success else 'failure' }}">
         <p class="message">{{ message }}</p>
         <pre class="query {{ 'success' if success else 'failure' }}">Ran: {{ query }}</pre>
-        <pre class="query {{ 'pass' if logistic_result else 'injection' }}">Logistic result: {{ 'Injection!' if logistic_result else 'No Injection'}}</pre>
-        <pre class="query {{ 'pass' if random_forest_result else 'injection' }}">Random forest: {{'Injection!' if random_forest_result else 'No Injection'}}</pre>
-        <pre class="query {{ 'pass' if openai_result else 'injection' }}">LLM(gpt-4o) result: {{'Injection!' if openai_result else 'No Injection'}}</pre>
+        <pre class="query {{ 'injection' if logistic_result else 'pass' }}">Logistic result: {{ 'Injection!' if logistic_result else 'No Injection'}}</pre>
+        <pre class="query {{ 'injection' if random_forest_result else 'pass' }}">Random forest: {{'Injection!' if random_forest_result else 'No Injection'}}</pre>
+        <pre class="query {{ 'injection' if openai_result else 'pass' }}">LLM(gpt-4o) result: {{'Injection!' if openai_result else 'No Injection'}}</pre>
     </div>
 </body>
 </html>
