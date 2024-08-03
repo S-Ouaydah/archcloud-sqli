@@ -19,7 +19,7 @@ vectorizer = joblib.load('./combined_vectorizer.pkl')
 logistic = joblib.load('./logistic_model.pkl')
 random_forest = joblib.load('./randomforest_model.pkl')  # Load the Random Forest model
 
-def predict(text):
+def predict_logistic(text):
     text_vector = vectorizer.transform([text])
     return bool(int(logistic.predict(text_vector)[0]))
 
@@ -54,6 +54,10 @@ def openai_predict(text):
     print(response.choices[0].message.content)
     return bool(int(response.choices[0].message.content))
 
+@app.get("/", response_class=HTMLResponse)
+async def index(request: Request):
+    return templates.TemplateResponse('index.html', {"request": request})
+
 @app.post("/login", response_class=HTMLResponse)
 async def login(request: Request, username: str = Form(...), password: str = Form(...)):
     conn = get_db_connection()
@@ -63,10 +67,10 @@ async def login(request: Request, username: str = Form(...), password: str = For
     cur = conn.cursor()
     query = f"SELECT * FROM users WHERE username ='{username}' AND password = '{password}'"
     # parameterized query
-    # param_query = "SELECT * FROM users WHERE username = %s AND password = %s"
-    print(query)
-    cur.execute(query)
-    # cur.execute(param_query, (username, password))
+    param_query = "SELECT * FROM users WHERE username = %s AND password = %s"
+    # print(query)
+    # cur.execute(query)
+    cur.execute(param_query, (username, password))
     user = cur.fetchone()
 
     cur.close()
@@ -77,13 +81,10 @@ async def login(request: Request, username: str = Form(...), password: str = For
         'success': bool(user),
         'message': 'Logged in successfully!' if user else 'Failed to login!',
         'query': query,
-        'logistic_result': predict(query),
+        'logistic_result': predict_logistic(query),
         'random_forest_result': predict_random_forest(query),  # Add Random Forest result
         'openai_result': openai_predict(query)
     }
 
     return templates.TemplateResponse('login.html', context)
 
-@app.get("/", response_class=HTMLResponse)
-async def index(request: Request):
-    return templates.TemplateResponse('index.html', {"request": request})
